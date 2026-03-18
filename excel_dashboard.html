@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Application Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111520;
+    --surface2: #161c2a;
+    --border: #1e2840;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --success: #22c55e;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8eaf0;
+    --muted: #6b7599;
+    --highlight: #1a2035;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── TOP BAR ─────────────────────────────── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-logo {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .topbar-actions { display: flex; gap: 0.75rem; align-items: center; }
+  .badge {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .badge.live { border-color: var(--success); color: var(--success); }
+
+  /* ─── LAYOUT ──────────────────────────────── */
+  .app { display: flex; height: calc(100vh - 60px); }
+
+  /* ─── SIDEBAR ─────────────────────────────── */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 0;
+    overflow-y: auto;
+  }
+  .sidebar-section { margin-bottom: 0.5rem; }
+  .sidebar-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 1.25rem;
+    margin-bottom: 0.4rem;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 1.25rem;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.8rem;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--highlight); color: var(--text); }
+  .nav-item.active { 
+    background: rgba(79,142,247,0.08); 
+    color: var(--accent); 
+    border-left-color: var(--accent); 
+  }
+  .nav-item .icon { font-size: 0.9rem; width: 18px; text-align: center; }
+  .nav-count {
+    margin-left: auto;
+    background: var(--highlight);
+    font-size: 0.65rem;
+    padding: 1px 7px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 0.75rem 1rem; }
+
+  /* ─── MAIN ────────────────────────────────── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ─── TOOLBAR ─────────────────────────────── */
+  .toolbar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .toolbar-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+    margin-right: 0.5rem;
+  }
+  .search-wrap {
+    flex: 1;
+    min-width: 200px;
+    max-width: 380px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.45rem 0.75rem 0.45rem 2.1rem;
+    border-radius: 6px;
+    outline: none;
+    transition: border 0.15s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap .si { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; }
+  .btn {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--border); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { opacity: 0.85; }
+  .filter-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  /* ─── STATS BAR ───────────────────────────── */
+  .stats-bar {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--surface2);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .stat-value { font-family: var(--font-head); font-weight: 700; font-size: 1.3rem; color: var(--text); }
+  .stat-sub { font-size: 0.65rem; color: var(--muted); }
+
+  /* ─── COLUMN CHOOSER ──────────────────────── */
+  .col-chooser-wrap {
+    position: relative;
+  }
+  .col-chooser-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    z-index: 200;
+    width: 280px;
+    max-height: 320px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .col-chooser-panel.open { display: block; }
+  .col-chooser-panel label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--text);
+    padding: 4px 0;
+    cursor: pointer;
+  }
+  .col-chooser-panel label input[type=checkbox] { accent-color: var(--accent); }
+
+  /* ─── TABLE AREA ──────────────────────────── */
+  .table-wrap {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+  }
+  table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+  }
+  thead { position: sticky; top: 0; z-index: 10; }
+  thead tr { background: var(--surface); }
+  th {
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid rgba(30,40,64,0.5);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s, background 0.15s;
+  }
+  th:hover { color: var(--accent); background: var(--highlight); }
+  th.sorted-asc::after { content: ' ↑'; color: var(--accent); }
+  th.sorted-desc::after { content: ' ↓'; color: var(--accent); }
+  tr:nth-child(even) td { background: rgba(22,28,42,0.5); }
+  tr:hover td { background: var(--highlight) !important; }
+  td {
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid rgba(30,40,64,0.5);
+    border-right: 1px solid rgba(30,40,64,0.3);
+    white-space: nowrap;
+    color: var(--text);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  td.sn { color: var(--muted); font-size: 0.65rem; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .pill-blue   { background: rgba(79,142,247,0.15); color: #4f8ef7; border: 1px solid rgba(79,142,247,0.3); }
+  .pill-green  { background: rgba(34,197,94,0.15);  color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  .pill-yellow { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .pill-red    { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .pill-purple { background: rgba(124,58,237,0.15); color: #7c3aed; border: 1px solid rgba(124,58,237,0.3); }
+  .pill-gray   { background: rgba(107,117,153,0.15);color: #6b7599; border: 1px solid rgba(107,117,153,0.3); }
+  .doc-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .doc-dot.ok  { background: var(--success); }
+  .doc-dot.pnd { background: var(--warn); }
+  .doc-dot.mis { background: var(--danger); }
+
+  /* ─── FOOTER / PAGINATION ─────────────────── */
+  .footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .pagination { display: flex; gap: 4px; }
+  .page-btn {
+    background: var(--highlight);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 3px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .page-btn:hover, .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ─── ROW DETAIL DRAWER ───────────────────── */
+  .drawer-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 300;
+    backdrop-filter: blur(2px);
+  }
+  .drawer-overlay.open { display: block; }
+  .drawer {
+    position: fixed;
+    top: 0; right: -520px;
+    width: 520px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 301;
+    transition: right 0.28s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .drawer.open { right: 0; }
+  .drawer-head {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .drawer-head h2 { font-family: var(--font-head); font-weight: 700; font-size: 1rem; }
+  .drawer-close { cursor: pointer; color: var(--muted); font-size: 1.2rem; line-height: 1; }
+  .drawer-close:hover { color: var(--text); }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 1.25rem 1.5rem; }
+  .drawer-section { margin-bottom: 1.5rem; }
+  .drawer-section-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .drawer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .drawer-field label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: block; margin-bottom: 3px; }
+  .drawer-field span { font-size: 0.78rem; color: var(--text); word-break: break-word; }
+  .drawer-field.full { grid-column: 1 / -1; }
+
+  /* ─── IMPORT PANEL ────────────────────────── */
+  .import-bar {
+    background: rgba(79,142,247,0.05);
+    border-bottom: 1px solid rgba(79,142,247,0.2);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .import-bar input[type=file] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 4px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  /* ─── EMPTY STATE ─────────────────────────── */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 3rem;
+  }
+  .empty-state .big { font-size: 3rem; opacity: 0.3; }
+
+  /* ─── SCROLLBAR ───────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ─── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .stats-bar { display: none; }
+    .drawer { width: 100vw; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">◈ UPES Online </div>
+  <div class="topbar-actions">
+    <span class="badge live">● Live</span>
+    <span class="badge">Excel Sync</span>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Views</div>
+      <div class="nav-item active" onclick="switchView('all',this)">
+        <span class="icon">⊞</span> All Applications
+        <span class="nav-count" id="cnt-all">0</span>
+      </div>
+      <div class="nav-item" onclick="switchView('ug',this)">
+        <span class="icon">🎓</span> UG Programs
+        <span class="nav-count" id="cnt-ug">0</span>
+      </div>
+      <div class="nav-item" onclick="switchView('pgcp',this)">
+        <span class="icon">📋</span> PGCP Programs
+        <span class="nav-count" id="cnt-pgcp">0</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Doc Status</div>
+      <div class="nav-item" onclick="filterByDocStatus('Complete',this)">
+        <span class="icon" style="color:var(--success)">●</span> Complete
+        <span class="nav-count" id="cnt-complete">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByDocStatus('Pending',this)">
+        <span class="icon" style="color:var(--warn)">●</span> Pending
+        <span class="nav-count" id="cnt-pending">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByDocStatus('Missing',this)">
+        <span class="icon" style="color:var(--danger)">●</span> Missing
+        <span class="nav-count" id="cnt-missing">0</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tools</div>
+      <div class="nav-item" onclick="exportCSV()">
+        <span class="icon">↓</span> Export CSV
+      </div>
+      <div class="nav-item" onclick="printTable()">
+        <span class="icon">⎙</span> Print View
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- IMPORT BAR -->
+    <div class="import-bar">
+      <span>📂 Import Excel / CSV:</span>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileImport(event)"/>
+      <span id="import-status" style="color:var(--accent)"></span>
+      <button class="btn" onclick="loadSampleData()">⚡ Load Sample Data</button>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <span class="toolbar-title">Applications</span>
+      <div class="search-wrap">
+        <span class="si">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search name, email, app no, program…" oninput="applyFilters()"/>
+      </div>
+      <select class="filter-select" id="programFilter" onchange="applyFilters()">
+        <option value="">All Programs</option>
+      </select>
+      <select class="filter-select" id="stageFilter" onchange="applyFilters()">
+        <option value="">All Stages</option>
+      </select>
+      <select class="filter-select" id="genderFilter" onchange="applyFilters()">
+        <option value="">All Gender</option>
+      </select>
+      <div class="col-chooser-wrap">
+        <button class="btn" onclick="toggleColChooser()">⊟ Columns</button>
+        <div class="col-chooser-panel" id="colChooserPanel"></div>
+      </div>
+      <button class="btn primary" onclick="exportCSV()">↓ Export</button>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="s-total">0</div>
+        <div class="stat-sub">Applications</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Filtered</div>
+        <div class="stat-value" id="s-filtered">0</div>
+        <div class="stat-sub">Showing</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Docs OK</div>
+        <div class="stat-value" id="s-docs">0</div>
+        <div class="stat-sub">Complete</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Registered</div>
+        <div class="stat-value" id="s-reg">0</div>
+        <div class="stat-sub">Stage</div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap" id="tableWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="big">📊</div>
+        <div>No data loaded yet.</div>
+        <div style="font-size:0.72rem">Import an Excel / CSV file or click "Load Sample Data"</div>
+      </div>
+      <table id="dataTable" style="display:none">
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <span id="footerInfo">0 records</span>
+      <div class="pagination" id="pagination"></div>
+      <span id="pageInfo"></span>
+    </div>
+
+  </div>
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2 id="drawerTitle">Application Detail</h2>
+    <span class="drawer-close" onclick="closeDrawer()">✕</span>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────
+const HEADERS = [
+  "SN","Degree/PGCP","Application No","Application Stage","Docs Status",
+  "Registration Email","Global ID","Registration Stage","Counts","Candidate Name",
+  "Email ID","Phone No","Program","Program Full Name","Program Name For Report",
+  "Counsellor Name","10th Marksheet","12th /Diploma Marksheet","Diploma Certificate",
+  "UG Marksheet","UG Degree","AadhaAr Card / Passport","Nationality",
+  "Aadhaar /Passport No.","ABC ID","DEB ID","Updated on DEB","Discount (If any)",
+  "Gender","Stu email","Password","Comments","Status"
+];
+
+// Columns visible by default
+const DEFAULT_VISIBLE = new Set([
+  "SN","Degree/PGCP","Application No","Application Stage","Docs Status",
+  "Candidate Name","Email ID","Phone No","Program","Counsellor Name","Gender","Status"
+]);
+
+const PAGE_SIZE = 20;
+
+let allData = [];       // raw rows (objects)
+let filtered = [];      // after filters
+let currentPage = 1;
+let sortCol = null;
+let sortDir = 1;
+let visibleCols = new Set(DEFAULT_VISIBLE);
+let activeDocFilter = null;
+let activeDegreeFilter = null;
+
+// ─── SAMPLE DATA ──────────────────────────────────────────────────────────
+function loadSampleData() {
+  const programs = ["BCA","MBA","B.Tech","BBA","MCA","B.Sc","M.Tech"];
+  const stages   = ["Applied","Docs Submitted","Under Review","Admitted","Rejected","Waitlisted"];
+  const docStats = ["Complete","Pending","Missing"];
+  const regStages= ["Registered","Pending","Verified"];
+  const genders  = ["Male","Female","Other"];
+  const counsellors = ["Priya Sharma","Rahul Mehta","Sneha Joshi","Amit Kumar","Ritu Singh"];
+  const names   = ["Aarav Patel","Diya Kapoor","Rohan Verma","Ananya Singh","Kabir Nair",
+                    "Meera Jain","Vivek Sharma","Priya Das","Arjun Reddy","Isha Gupta",
+                    "Siddharth Rao","Kavya Mishra","Nikhil Tiwari","Pooja Pandey","Raj Malhotra"];
+  const rows = [];
+  for (let i = 1; i <= 60; i++) {
+    const name = names[i % names.length];
+    const prog = programs[i % programs.length];
+    rows.push({
+      "SN": i,
+      "Degree/PGCP": i % 3 === 0 ? "PGCP" : "UG",
+      "Application No": "APP" + String(1000+i).padStart(5,"0"),
+      "Application Stage": stages[i % stages.length],
+      "Docs Status": docStats[i % docStats.length],
+      "Registration Email": name.toLowerCase().replace(/ /g,".") + "@gmail.com",
+      "Global ID": "GLB" + (5000+i),
+      "Registration Stage": regStages[i % regStages.length],
+      "Counts": Math.floor(Math.random()*5)+1,
+      "Candidate Name": name,
+      "Email ID": name.toLowerCase().replace(/ /g,"_") + "@example.com",
+      "Phone No": "98" + String(Math.floor(Math.random()*100000000)).padStart(8,"0"),
+      "Program": prog,
+      "Program Full Name": prog + " (Full Time)",
+      "Program Name For Report": prog,
+      "Counsellor Name": counsellors[i % counsellors.length],
+      "10th Marksheet": i%5===0?"Missing":"Available",
+      "12th /Diploma Marksheet": i%7===0?"Pending":"Available",
+      "Diploma Certificate": i%4===0?"Missing":"N/A",
+      "UG Marksheet": i%6===0?"Pending":"Available",
+      "UG Degree": i%8===0?"Missing":"Available",
+      "AadhaAr Card / Passport": "Available",
+      "Nationality": i%10===0?"NRI":"Indian",
+      "Aadhaar /Passport No.": i%10===0?"P"+String(Math.floor(Math.random()*9000000)+1000000):"XXXX XXXX "+String(Math.floor(Math.random()*9000)+1000),
+      "ABC ID": "ABC"+String(i*7+100),
+      "DEB ID": "DEB"+String(i*3+200),
+      "Updated on DEB": i%3===0?"Yes":"No",
+      "Discount (If any)": i%4===0 ? (Math.floor(Math.random()*20)+5)+"%" : "None",
+      "Gender": genders[i%genders.length],
+      "Stu email": name.toLowerCase().replace(/ /g,".")+i+"@student.edu",
+      "Password": "••••••••",
+      "Comments": i%5===0?"Documents re-requested":"",
+      "Status": i%6===0?"Inactive":"Active"
+    });
+  }
+  ingestData(rows);
+  document.getElementById("import-status").textContent = "✓ Sample data loaded (60 rows)";
+}
+
+// ─── FILE IMPORT ──────────────────────────────────────────────────────────
+async function handleFileImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    const text = await file.text();
+    parseCSV(text);
+  } else {
+    // For XLSX we use SheetJS via CDN
+    if (typeof XLSX === 'undefined') {
+      document.getElementById("import-status").textContent = "⚠ Loading XLSX parser…";
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+    }
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(ws, {defval:""});
+    ingestData(json);
+    document.getElementById("import-status").textContent = `✓ Loaded: ${file.name} (${json.length} rows)`;
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res,rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  const rows = lines.slice(1).map(line => {
+    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,))/g) || [];
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim(); });
+    return obj;
+  });
+  ingestData(rows);
+  document.getElementById("import-status").textContent = `✓ CSV loaded (${rows.length} rows)`;
+}
+
+// ─── DATA INGESTION ────────────────────────────────────────────────────────
+function ingestData(rows) {
+  allData = rows;
+  buildFilters();
+  buildColChooser();
+  renderTableHead();
+  applyFilters();
+  updateSidebarCounts();
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("dataTable").style.display = "";
+}
+
+// ─── FILTER DROPDOWNS ─────────────────────────────────────────────────────
+function buildFilters() {
+  const programs = [...new Set(allData.map(r=>r["Program"]).filter(Boolean))].sort();
+  const stages   = [...new Set(allData.map(r=>r["Application Stage"]).filter(Boolean))].sort();
+  const genders  = [...new Set(allData.map(r=>r["Gender"]).filter(Boolean))].sort();
+  fillSelect("programFilter", programs);
+  fillSelect("stageFilter", stages);
+  fillSelect("genderFilter", genders);
+  document.getElementById("s-total").textContent = allData.length;
+}
+function fillSelect(id, opts) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All</option>' + opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  sel.value = cur;
+}
+
+// ─── COLUMN CHOOSER ───────────────────────────────────────────────────────
+function buildColChooser() {
+  const panel = document.getElementById("colChooserPanel");
+  panel.innerHTML = HEADERS.map(h => `
+    <label>
+      <input type="checkbox" ${visibleCols.has(h)?'checked':''} onchange="toggleCol('${h}', this.checked)"/>
+      ${h}
+    </label>`).join('');
+}
+function toggleCol(h, checked) {
+  checked ? visibleCols.add(h) : visibleCols.delete(h);
+  renderTableHead();
+  renderPage();
+}
+function toggleColChooser() {
+  document.getElementById("colChooserPanel").classList.toggle("open");
+}
+document.addEventListener("click", e => {
+  const wrap = document.querySelector(".col-chooser-wrap");
+  if (wrap && !wrap.contains(e.target)) document.getElementById("colChooserPanel").classList.remove("open");
+});
+
+// ─── TABLE HEAD ───────────────────────────────────────────────────────────
+function renderTableHead() {
+  const tr = document.getElementById("tableHead");
+  tr.innerHTML = HEADERS
+    .filter(h => visibleCols.has(h))
+    .map(h => `<th onclick="sortBy('${h}')" class="${sortCol===h ? (sortDir===1?'sorted-asc':'sorted-desc') : ''}">${h}</th>`)
+    .join('');
+}
+
+// ─── SORT ─────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  filtered.sort((a,b) => {
+    const av = a[col]||'', bv = b[col]||'';
+    const an = Number(av), bn = Number(bv);
+    if (!isNaN(an) && !isNaN(bn)) return (an-bn)*sortDir;
+    return av.toString().localeCompare(bv.toString())*sortDir;
+  });
+  currentPage = 1;
+  renderTableHead();
+  renderPage();
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────
+function applyFilters() {
+  const q  = document.getElementById("searchInput").value.toLowerCase();
+  const prog = document.getElementById("programFilter").value;
+  const stage= document.getElementById("stageFilter").value;
+  const gen  = document.getElementById("genderFilter").value;
+
+  filtered = allData.filter(r => {
+    if (activeDegreeFilter && r["Degree/PGCP"] && !r["Degree/PGCP"].toLowerCase().includes(activeDegreeFilter)) return false;
+    if (activeDocFilter && r["Docs Status"] !== activeDocFilter) return false;
+    if (prog && r["Program"] !== prog) return false;
+    if (stage && r["Application Stage"] !== stage) return false;
+    if (gen && r["Gender"] !== gen) return false;
+    if (q) {
+      const hay = [r["Candidate Name"],r["Email ID"],r["Application No"],r["Program"],r["Registration Email"]].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("s-filtered").textContent = filtered.length;
+  currentPage = 1;
+  renderPage();
+}
+
+// ─── SIDEBAR VIEWS ────────────────────────────────────────────────────────
+function switchView(type, el) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  activeDegreeFilter = type === 'all' ? null : type;
+  activeDocFilter = null;
+  applyFilters();
+}
+function filterByDocStatus(status, el) {
+  document.querySelectorAll('.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  activeDocFilter = status;
+  activeDegreeFilter = null;
+  applyFilters();
+}
+function updateSidebarCounts() {
+  document.getElementById("cnt-all").textContent = allData.length;
+  document.getElementById("cnt-ug").textContent = allData.filter(r=>r["Degree/PGCP"]==="UG").length;
+  document.getElementById("cnt-pgcp").textContent = allData.filter(r=>r["Degree/PGCP"]==="PGCP").length;
+  document.getElementById("cnt-complete").textContent = allData.filter(r=>r["Docs Status"]==="Complete").length;
+  document.getElementById("cnt-pending").textContent = allData.filter(r=>r["Docs Status"]==="Pending").length;
+  document.getElementById("cnt-missing").textContent = allData.filter(r=>r["Docs Status"]==="Missing").length;
+  document.getElementById("s-docs").textContent = allData.filter(r=>r["Docs Status"]==="Complete").length;
+  document.getElementById("s-reg").textContent = allData.filter(r=>r["Registration Stage"]==="Registered").length;
+}
+
+// ─── RENDER PAGE ──────────────────────────────────────────────────────────
+function renderPage() {
+  const tbody = document.getElementById("tableBody");
+  const start = (currentPage-1)*PAGE_SIZE;
+  const slice = filtered.slice(start, start+PAGE_SIZE);
+  const cols = HEADERS.filter(h => visibleCols.has(h));
+
+  tbody.innerHTML = slice.map((row,i) => `
+    <tr style="cursor:pointer" onclick="openDrawer(${start+i})">
+      ${cols.map(h => {
+        let val = row[h] ?? '';
+        if (h === "SN") return `<td class="sn">${val}</td>`;
+        if (h === "Docs Status") {
+          const cls = val==="Complete"?"pill-green":val==="Pending"?"pill-yellow":"pill-red";
+          const dot = val==="Complete"?"ok":val==="Pending"?"pnd":"mis";
+          return `<td><span class="pill ${cls}"><span class="doc-dot ${dot}"></span>${val||'—'}</span></td>`;
+        }
+        if (h === "Application Stage") {
+          const cls = {Applied:'pill-blue','Docs Submitted':'pill-purple','Under Review':'pill-yellow',Admitted:'pill-green',Rejected:'pill-red',Waitlisted:'pill-gray'}[val]||'pill-gray';
+          return `<td><span class="pill ${cls}">${val||'—'}</span></td>`;
+        }
+        if (h === "Status") {
+          return `<td><span class="pill ${val==='Active'?'pill-green':'pill-gray'}">${val||'—'}</span></td>`;
+        }
+        if (h === "Registration Stage") {
+          const cls = {Registered:'pill-green',Verified:'pill-blue',Pending:'pill-yellow'}[val]||'pill-gray';
+          return `<td><span class="pill ${cls}">${val||'—'}</span></td>`;
+        }
+        if (h === "Degree/PGCP") {
+          return `<td><span class="pill ${val==='PGCP'?'pill-purple':'pill-blue'}">${val||'—'}</span></td>`;
+        }
+        if (h === "Password") return `<td style="color:var(--muted)">••••••••</td>`;
+        return `<td title="${String(val).replace(/"/g,'&quot;')}">${val||'—'}</td>`;
+      }).join('')}
+    </tr>`).join('');
+
+  renderPagination();
+  document.getElementById("footerInfo").textContent = `Showing ${start+1}–${Math.min(start+PAGE_SIZE,filtered.length)} of ${filtered.length} records`;
+  document.getElementById("pageInfo").textContent = `Page ${currentPage} / ${Math.ceil(filtered.length/PAGE_SIZE)||1}`;
+}
+
+// ─── PAGINATION ───────────────────────────────────────────────────────────
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  const pg = document.getElementById("pagination");
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  let start = Math.max(1, currentPage-2), end = Math.min(total, start+4);
+  if (end-start<4) start = Math.max(1,end-4);
+  for (let p=start;p<=end;p++) html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+function goPage(p) {
+  const total = Math.ceil(filtered.length/PAGE_SIZE);
+  if (p < 1 || p > total) return;
+  currentPage = p;
+  renderPage();
+  document.getElementById("tableWrap").scrollTop = 0;
+}
+
+// ─── DRAWER ───────────────────────────────────────────────────────────────
+function openDrawer(idx) {
+  const row = filtered[idx];
+  if (!row) return;
+  document.getElementById("drawerTitle").textContent = row["Candidate Name"] || "Application Detail";
+  const sections = [
+    { title: "Identity", fields: ["SN","Candidate Name","Gender","Nationality","Aadhaar /Passport No.","ABC ID","DEB ID"] },
+    { title: "Application", fields: ["Degree/PGCP","Application No","Application Stage","Registration Stage","Counts","Global ID"] },
+    { title: "Program", fields: ["Program","Program Full Name","Program Name For Report","Counsellor Name","Discount (If any)"] },
+    { title: "Contact", fields: ["Registration Email","Email ID","Phone No","Stu email"] },
+    { title: "Documents", fields: ["Docs Status","10th Marksheet","12th /Diploma Marksheet","Diploma Certificate","UG Marksheet","UG Degree","AadhaAr Card / Passport","Updated on DEB"] },
+    { title: "Account", fields: ["Status","Stu email","Comments"] }
+  ];
+  document.getElementById("drawerBody").innerHTML = sections.map(s => `
+    <div class="drawer-section">
+      <div class="drawer-section-title">${s.title}</div>
+      <div class="drawer-grid">
+        ${s.fields.map(f => {
+          let val = row[f] ?? '—';
+          if (f==="Password") val = "••••••••";
+          return `<div class="drawer-field"><label>${f}</label><span>${val}</span></div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById("drawerOverlay").classList.add("open");
+  document.getElementById("drawer").classList.add("open");
+}
+function closeDrawer() {
+  document.getElementById("drawerOverlay").classList.remove("open");
+  document.getElementById("drawer").classList.remove("open");
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!filtered.length) return alert("No data to export.");
+  const cols = HEADERS;
+  const lines = [cols.join(','), ...filtered.map(r => cols.map(h => `"${(r[h]??'').toString().replace(/"/g,'""')}"`).join(','))];
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'applications_export.csv';
+  a.click();
+}
+
+function printTable() { window.print(); }
+
+// Auto-load sample data
+loadSampleData();
+</script>
+</body>
+</html>
